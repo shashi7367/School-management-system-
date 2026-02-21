@@ -1,0 +1,339 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}My Profile — Admin Portal{% endblock %}
+
+{% block header_title %}My Profile{% endblock %}
+{% block user_role %}Administrator{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+    .profile-hero {
+        background: linear-gradient(135deg, #4F46E5 0%, #6C63FF 50%, #8B5CF6 100%);
+        border-radius: 20px;
+        padding: 40px 36px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+    }
+
+    .profile-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -40%;
+        left: 30%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 50%;
+    }
+
+    .profile-avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(10px);
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 36px !important;
+        font-weight: 800 !important;
+        color: white !important;
+        border: 3px solid rgba(255, 255, 255, 0.3) !important;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-hero-info {
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-hero-info h2 {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        margin-bottom: 4px !important;
+        color: white !important;
+    }
+
+    .profile-hero-info .role-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        margin-top: 8px;
+        backdrop-filter: blur(4px);
+        color: white !important;
+    }
+
+    .profile-hero-info p {
+        font-size: 14px !important;
+        opacity: 0.85;
+        margin-top: 4px;
+        color: white !important;
+    }
+
+    .profile-details-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 24px !important;
+        margin-bottom: 28px !important;
+    }
+
+    .detail-card {
+        background: white !important;
+        border-radius: 16px !important;
+        border: 1px solid var(--border-color) !important;
+        overflow: hidden !important;
+    }
+
+    .detail-card-header {
+        padding: 16px 22px !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .detail-card-header h3 {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: var(--text-dark) !important;
+    }
+
+    .detail-card-body {
+        padding: 20px 22px !important;
+    }
+
+    .detail-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 0 !important;
+        border-bottom: 1px solid #F3F4F6 !important;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none !important;
+    }
+
+    .detail-label {
+        font-size: 13px !important;
+        color: var(--text-secondary) !important;
+        font-weight: 500 !important;
+    }
+
+    .detail-value {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: var(--text-dark) !important;
+    }
+
+    .mini-stats-row {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 16px !important;
+        margin-bottom: 28px !important;
+    }
+
+    .mini-stat {
+        background: white !important;
+        border-radius: 14px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 20px !important;
+        text-align: center !important;
+        transition: all 0.3s !important;
+    }
+
+    .mini-stat:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .mini-stat .ms-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
+        margin: 0 auto 10px !important;
+    }
+
+    .mini-stat .ms-value {
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        color: var(--text-dark) !important;
+    }
+
+    .mini-stat .ms-label {
+        font-size: 12px !important;
+        color: var(--text-secondary) !important;
+        font-weight: 500 !important;
+        margin-top: 2px !important;
+    }
+
+    @media (max-width: 768px) {
+        .profile-hero {
+            flex-direction: column !important;
+            text-align: center !important;
+            padding: 28px 20px !important;
+        }
+
+        .profile-details-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .mini-stats-row {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Profile Hero -->
+<div class="profile-hero animate-in">
+    <div class="profile-avatar-lg">
+        {{ user.first_name|make_list|first|upper }}{{ user.last_name|make_list|first|upper }}
+    </div>
+    <div class="profile-hero-info">
+        <h2>{{ user.get_full_name|default:user.username }}</h2>
+        <p>{{ user.email|default:"No email set" }}</p>
+        <span class="role-badge"><i class="fas fa-shield-alt" style="margin-right:6px;"></i> Administrator</span>
+    </div>
+</div>
+
+<!-- System Stats -->
+<div class="mini-stats-row animate-in animate-delay-1">
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#FEF3C7; color:#D97706;">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="ms-value">{{ total_students }}</div>
+        <div class="ms-label">Students</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#EDE9FE; color:#7C3AED;">
+            <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <div class="ms-value">{{ total_staff }}</div>
+        <div class="ms-label">Staff Members</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#DBEAFE; color:#2563EB;">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="ms-value">{{ total_users }}</div>
+        <div class="ms-label">Total Users</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#D1FAE5; color:#059669;">
+            <i class="fas fa-bus"></i>
+        </div>
+        <div class="ms-value">{{ total_vehicles }}</div>
+        <div class="ms-label">Vehicles</div>
+    </div>
+</div>
+
+<!-- Details Grid -->
+<div class="profile-details-grid animate-in animate-delay-2">
+
+    <!-- Account Information -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-id-card" style="color:var(--primary); font-size:16px;"></i>
+            <h3>Account Information</h3>
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value">{{ user.get_full_name|default:"—" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Username</span>
+                <span class="detail-value">{{ user.username }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ user.email|default:"—" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Role</span>
+                <span class="detail-value">
+                    <span class="badge badge-purple">{{ user.get_role_display }}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security & Access -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-shield-alt" style="color:var(--accent-green); font-size:16px;"></i>
+            <h3>Security & Access</h3>
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row">
+                <span class="detail-label">Date Joined</span>
+                <span class="detail-value">{{ user.date_joined|date:"d M Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Last Login</span>
+                <span class="detail-value">{{ user.last_login|date:"d M Y, h:i A"|default:"Never" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Superuser</span>
+                <span class="detail-value">
+                    {% if user.is_superuser %}
+                    <span class="badge badge-green">Yes</span>
+                    {% else %}
+                    <span class="badge badge-yellow">No</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Active</span>
+                <span class="detail-value">
+                    {% if user.is_active %}
+                    <span class="badge badge-green">Active</span>
+                    {% else %}
+                    <span class="badge badge-pink">Inactive</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Quick Actions Card -->
+<div class="info-card animate-in animate-delay-3"
+    style="background: linear-gradient(135deg, var(--primary), var(--accent-purple));">
+    <h4><i class="fas fa-cog" style="margin-right: 8px;"></i>Administration</h4>
+    <p>Manage users, view logs, and configure settings from the Django admin panel.</p>
+    <a href="/admin/" class="info-card-btn" style="color: var(--primary);">Open Admin Panel</a>
+</div>
+
+{% endblock %}

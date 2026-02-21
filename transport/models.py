@@ -7,6 +7,7 @@ class Driver(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='driver_profile')
     license_number = models.CharField(max_length=50, unique=True)
     phone_number = models.CharField(max_length=15)
+    photo = models.ImageField(upload_to='driver_photos/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.license_number})"

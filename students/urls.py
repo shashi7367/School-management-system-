@@ -11,4 +11,5 @@ urlpatterns = [
     path('homework/', views.student_homework, name='homework'),
     path('timetable/', views.student_timetable, name='timetable'),
     path('report-card/', views.download_report_card, name='report_card'),
+    path('profile/', views.student_profile, name='profile'),
 ]

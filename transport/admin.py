@@ -3,6 +3,8 @@ from django.contrib import admin, messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import Driver, Vehicle, Route, StudentTransport, TransportAttendance, MaintenanceLog, FuelLog
 from core.models import User
 
@@ -15,6 +17,7 @@ class DriverForm(forms.ModelForm):
     vehicle_model = forms.CharField(max_length=50, required=False, label='Bus Name/Model', help_text="e.g. Tata Starbus 2024")
     vehicle_plate = forms.CharField(max_length=20, required=False, label='Number Plate', help_text="e.g. DL-01-AB-1234")
     vehicle_capacity = forms.IntegerField(required=False, label='Bus Capacity', help_text="Seating Capacity", initial=30)
+    photo = forms.ImageField(required=False, label='Photo', help_text='Upload a passport-size photo')
 
     class Meta:
         model = Driver
@@ -28,6 +31,8 @@ class DriverForm(forms.ModelForm):
                 self.fields['first_name'].initial = self.instance.user.first_name
                 self.fields['last_name'].initial = self.instance.user.last_name
                 self.fields['email'].initial = self.instance.user.email
+            if self.instance.photo:
+                self.fields['photo'].initial = self.instance.photo
             
             # Pre-fill Vehicle data (reverse relationship)
             try:
@@ -41,8 +46,14 @@ class DriverForm(forms.ModelForm):
 @admin.register(Driver)
 class DriverAdmin(admin.ModelAdmin):
     form = DriverForm
-    list_display = ('get_full_name', 'phone_number', 'license_number', 'get_vehicle')
+    list_display = ('photo_preview', 'get_full_name', 'phone_number', 'license_number', 'get_vehicle')
     search_fields = ('user__first_name', 'user__last_name', 'license_number', 'phone_number')
+
+    def photo_preview(self, obj):
+        if obj.photo:
+            return format_html('<img src="{}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" />', obj.photo.url)
+        return mark_safe('<span style="display:inline-block;width:36px;height:36px;border-radius:50%;background:#E5E7EB;text-align:center;line-height:36px;font-size:14px;color:#6B7280;">👤</span>')
+    photo_preview.short_description = 'Photo'
 
     def get_full_name(self, obj):
         return obj.user.get_full_name() if obj.user else "No User"
@@ -79,6 +90,8 @@ class DriverAdmin(admin.ModelAdmin):
                 role=User.Role.STAFF # Drivers are staff
             )
             obj.user = user
+            if form.cleaned_data.get('photo'):
+                obj.photo = form.cleaned_data['photo']
             obj.save()
             
             # Send Credentials
@@ -105,6 +118,8 @@ class DriverAdmin(admin.ModelAdmin):
             user.last_name = last_name
             user.email = email
             user.save()
+            if form.cleaned_data.get('photo'):
+                obj.photo = form.cleaned_data['photo']
             super().save_model(request, obj, form, change)
 
         # Handle Vehicle Creation/Update

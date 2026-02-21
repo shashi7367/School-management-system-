@@ -169,3 +169,38 @@ def log_maintenance(request):
         'driver_vehicle': driver_vehicle
     }
     return render(request, 'transport/log_maintenance.html', context)
+
+
+@login_required
+def driver_profile(request):
+    try:
+        driver = request.user.driver_profile
+    except Driver.DoesNotExist:
+        return render(request, 'core/access_denied.html')
+
+    # Get assigned vehicle
+    try:
+        vehicle = driver.assigned_vehicle
+    except Vehicle.DoesNotExist:
+        vehicle = None
+
+    # Get routes for vehicle
+    routes = []
+    if vehicle:
+        routes = vehicle.routes.all()
+
+    # Get recent fuel & maintenance logs
+    fuel_logs = []
+    maintenance_logs = []
+    if vehicle:
+        fuel_logs = FuelLog.objects.filter(vehicle=vehicle).order_by('-date')[:5]
+        maintenance_logs = MaintenanceLog.objects.filter(vehicle=vehicle).order_by('-date')[:5]
+
+    context = {
+        'driver': driver,
+        'vehicle': vehicle,
+        'routes': routes,
+        'fuel_logs': fuel_logs,
+        'maintenance_logs': maintenance_logs,
+    }
+    return render(request, 'transport/driver_profile.html', context)

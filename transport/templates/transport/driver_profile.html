@@ -1,0 +1,366 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}My Profile — Driver Portal{% endblock %}
+
+{% block header_title %}My Profile{% endblock %}
+{% block user_role %}Driver{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{% url 'transport:driver_dashboard' %}" class="nav-item">
+    <i class="fas fa-th-large"></i> Dashboard
+</a>
+<a href="{% url 'transport:log_fuel' %}" class="nav-item">
+    <i class="fas fa-gas-pump"></i> Log Fuel
+</a>
+<a href="{% url 'transport:log_maintenance' %}" class="nav-item">
+    <i class="fas fa-wrench"></i> Log Maintenance
+</a>
+<a href="{% url 'transport:driver_profile' %}" class="nav-item active">
+    <i class="fas fa-user"></i> My Profile
+</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-hero {
+        background: linear-gradient(135deg, #D97706 0%, #F59E0B 50%, #FCD34D 100%);
+        border-radius: 20px;
+        padding: 40px 36px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+    }
+
+    .profile-avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 800;
+        color: white;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-hero-info {
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-hero-info h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .profile-hero-info .role-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+        backdrop-filter: blur(4px);
+    }
+
+    .profile-hero-info p {
+        font-size: 14px;
+        opacity: 0.85;
+        margin-top: 4px;
+    }
+
+    .profile-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 28px;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .detail-card-header {
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detail-card-header h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .detail-card-body {
+        padding: 20px 22px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .mini-stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .mini-stat {
+        background: white;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .mini-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .mini-stat .ms-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin: 0 auto 10px;
+    }
+
+    .mini-stat .ms-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .mini-stat .ms-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    @media (max-width: 768px) {
+        .profile-hero {
+            flex-direction: column;
+            text-align: center;
+            padding: 28px 20px;
+        }
+
+        .profile-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mini-stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Profile Hero -->
+<div class="profile-hero animate-in">
+    {% if driver.photo %}
+    <img src="{{ driver.photo.url }}" alt="Photo"
+        style="width:100px;height:100px;border-radius:24px;object-fit:cover;border:3px solid rgba(255,255,255,0.3);flex-shrink:0;position:relative;z-index:1;">
+    {% else %}
+    <div class="profile-avatar-lg">
+        {{ driver.user.first_name|make_list|first|upper }}{{ driver.user.last_name|make_list|first|upper }}
+    </div>
+    {% endif %}
+    <div class="profile-hero-info">
+        <h2>{{ driver.user.get_full_name }}</h2>
+        <p>License: {{ driver.license_number }}</p>
+        <span class="role-badge"><i class="fas fa-bus" style="margin-right:6px;"></i> Driver</span>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="mini-stats-row animate-in animate-delay-1">
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#DBEAFE; color:#2563EB;">
+            <i class="fas fa-bus"></i>
+        </div>
+        <div class="ms-value">{% if vehicle %}1{% else %}0{% endif %}</div>
+        <div class="ms-label">Assigned Vehicle</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#EDE9FE; color:#7C3AED;">
+            <i class="fas fa-route"></i>
+        </div>
+        <div class="ms-value">{{ routes|length }}</div>
+        <div class="ms-label">Active Routes</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#D1FAE5; color:#059669;">
+            <i class="fas fa-gas-pump"></i>
+        </div>
+        <div class="ms-value">{{ fuel_logs|length }}</div>
+        <div class="ms-label">Fuel Logs</div>
+    </div>
+</div>
+
+<!-- Details Grid -->
+<div class="profile-details-grid animate-in animate-delay-2">
+
+    <!-- Personal Information -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-id-card" style="color:var(--primary); font-size:16px;"></i>
+            <h3>Personal Information</h3>
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value">{{ driver.user.get_full_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Username</span>
+                <span class="detail-value">{{ driver.user.username }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ driver.user.email|default:"—" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Phone Number</span>
+                <span class="detail-value">{{ driver.phone_number }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">License Number</span>
+                <span class="detail-value">{{ driver.license_number }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Information -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-bus" style="color:var(--accent-green); font-size:16px;"></i>
+            <h3>Assigned Vehicle</h3>
+        </div>
+        <div class="detail-card-body">
+            {% if vehicle %}
+            <div class="detail-row">
+                <span class="detail-label">Registration</span>
+                <span class="detail-value">{{ vehicle.registration_number }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Model</span>
+                <span class="detail-value">{{ vehicle.model }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Capacity</span>
+                <span class="detail-value">{{ vehicle.capacity }} Seats</span>
+            </div>
+            {% else %}
+            <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
+                <i class="fas fa-exclamation-triangle" style="margin-right:6px; color:#D97706;"></i> No vehicle assigned
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Routes -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-route" style="color:var(--accent-purple); font-size:16px;"></i>
+            <h3>Assigned Routes</h3>
+        </div>
+        <div class="detail-card-body">
+            {% if routes %}
+            {% for route in routes %}
+            <div class="detail-row">
+                <span class="detail-label">{{ route.name }}</span>
+                <span class="detail-value" style="font-size:12px;">{{ route.start_point }} → {{ route.end_point
+                    }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
+                <i class="fas fa-map" style="margin-right:6px;"></i> No routes assigned
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Maintenance -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-wrench" style="color:var(--accent-yellow); font-size:16px;"></i>
+            <h3>Recent Maintenance</h3>
+        </div>
+        <div class="detail-card-body">
+            {% if maintenance_logs %}
+            {% for log in maintenance_logs %}
+            <div class="detail-row">
+                <span class="detail-label">{{ log.date|date:"d M Y" }}</span>
+                <span class="detail-value">₹{{ log.cost }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
+                <i class="fas fa-check-circle" style="margin-right:6px; color:#059669;"></i> No recent maintenance
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

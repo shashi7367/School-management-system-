@@ -161,3 +161,28 @@ def assign_homework(request):
         'subjects': subjects,
         'today': today
     })
+
+
+@login_required
+def staff_profile(request):
+    if request.user.role not in [User.Role.TEACHER, User.Role.STAFF]:
+        return render(request, 'core/access_denied.html')
+
+    try:
+        staff_profile = request.user.staff_profile
+    except Staff.DoesNotExist:
+        return render(request, 'staff/no_profile.html')
+
+    classes_taught = Class.objects.filter(teacher=staff_profile)
+    subjects_taught = Subject.objects.filter(teacher=staff_profile)
+    recent_leaves = Leave.objects.filter(staff=staff_profile).order_by('-start_date')[:5]
+    payslips = Payslip.objects.filter(staff=staff_profile).order_by('-month')[:3]
+
+    context = {
+        'staff': staff_profile,
+        'classes': classes_taught,
+        'subjects': subjects_taught,
+        'recent_leaves': recent_leaves,
+        'payslips': payslips,
+    }
+    return render(request, 'staff/profile.html', context)

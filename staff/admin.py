@@ -3,6 +3,8 @@ from django.contrib import admin, messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import Staff, Leave, Payslip
 from core.models import User
 
@@ -16,6 +18,7 @@ class StaffForm(forms.ModelForm):
         (User.Role.TRANSPORT_MANAGER, 'Transport Manager'),
         (User.Role.ADMIN, 'Admin')
     ], initial=User.Role.TEACHER, label='Role')
+    photo = forms.ImageField(required=False, label='Photo', help_text='Upload a passport-size photo')
 
     class Meta:
         model = Staff
@@ -33,13 +36,21 @@ class StaffForm(forms.ModelForm):
                 self.fields['last_name'].initial = self.instance.user.last_name
                 self.fields['email'].initial = self.instance.user.email
                 self.fields['role'].initial = self.instance.user.role
+            if self.instance.photo:
+                self.fields['photo'].initial = self.instance.photo
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
     form = StaffForm
-    list_display = ('get_full_name', 'designation', 'department', 'employee_id', 'get_role')
+    list_display = ('photo_preview', 'get_full_name', 'designation', 'department', 'employee_id', 'get_role')
     list_filter = ('department', 'designation', 'user__role')
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'employee_id')
+
+    def photo_preview(self, obj):
+        if obj.photo:
+            return format_html('<img src="{}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" />', obj.photo.url)
+        return mark_safe('<span style="display:inline-block;width:36px;height:36px;border-radius:50%;background:#E5E7EB;text-align:center;line-height:36px;font-size:14px;color:#6B7280;">👤</span>')
+    photo_preview.short_description = 'Photo'
 
     def get_full_name(self, obj):
         return obj.user.get_full_name() if obj.user else "-"
@@ -69,6 +80,8 @@ class StaffAdmin(admin.ModelAdmin):
                 role=role
             )
             obj.user = user
+            if form.cleaned_data.get('photo'):
+                obj.photo = form.cleaned_data['photo']
             obj.save()
             
             # Send Credentials
@@ -96,6 +109,8 @@ class StaffAdmin(admin.ModelAdmin):
             user.email = email
             user.role = role
             user.save()
+            if form.cleaned_data.get('photo'):
+                obj.photo = form.cleaned_data['photo']
             super().save_model(request, obj, form, change)
 
 @admin.register(Leave)

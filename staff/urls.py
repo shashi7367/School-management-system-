@@ -13,4 +13,5 @@ urlpatterns = [
     path('logs/salary/', views.view_salary, name='view_salary'),
     path('homework/assign/', views.assign_homework, name='assign_homework'),
     path('apply-leave/', views.apply_leave, name='apply_leave'),
+    path('profile/', views.staff_profile, name='profile'),
 ]

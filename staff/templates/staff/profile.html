@@ -1,0 +1,425 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}My Profile — Teacher Portal{% endblock %}
+
+{% block header_title %}My Profile{% endblock %}
+{% block user_role %}Teacher{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{% url 'staff:dashboard' %}" class="nav-item">
+    <i class="fas fa-th-large"></i> Dashboard
+</a>
+<a href="{% url 'staff:select_attendance_class' %}" class="nav-item">
+    <i class="fas fa-calendar-check"></i> Attendance
+</a>
+<a href="{% url 'staff:select_exam' %}" class="nav-item">
+    <i class="fas fa-pen"></i> Enter Marks
+</a>
+<a href="{% url 'staff:timetable' %}" class="nav-item">
+    <i class="fas fa-clock"></i> Timetable
+</a>
+<a href="{% url 'staff:assign_homework' %}" class="nav-item">
+    <i class="fas fa-book-open"></i> Homework
+</a>
+<a href="{% url 'staff:view_salary' %}" class="nav-item">
+    <i class="fas fa-money-bill-wave"></i> Salary
+</a>
+<a href="{% url 'staff:apply_leave' %}" class="nav-item">
+    <i class="fas fa-calendar-minus"></i> Apply Leave
+</a>
+<a href="{% url 'staff:profile' %}" class="nav-item active">
+    <i class="fas fa-user"></i> My Profile
+</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-hero {
+        background: linear-gradient(135deg, #059669 0%, #34D399 50%, #6EE7B7 100%);
+        border-radius: 20px;
+        padding: 40px 36px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+    }
+
+    .profile-avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 800;
+        color: white;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-hero-info {
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-hero-info h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .profile-hero-info .role-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+        backdrop-filter: blur(4px);
+    }
+
+    .profile-hero-info p {
+        font-size: 14px;
+        opacity: 0.85;
+        margin-top: 4px;
+    }
+
+    .profile-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 28px;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .detail-card-header {
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detail-card-header h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .detail-card-body {
+        padding: 20px 22px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .mini-stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .mini-stat {
+        background: white;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .mini-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .mini-stat .ms-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin: 0 auto 10px;
+    }
+
+    .mini-stat .ms-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .mini-stat .ms-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 4px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .profile-hero {
+            flex-direction: column;
+            text-align: center;
+            padding: 28px 20px;
+        }
+
+        .profile-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mini-stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Profile Hero -->
+<div class="profile-hero animate-in">
+    {% if staff.photo %}
+    <img src="{{ staff.photo.url }}" alt="Photo"
+        style="width:100px;height:100px;border-radius:24px;object-fit:cover;border:3px solid rgba(255,255,255,0.3);flex-shrink:0;position:relative;z-index:1;">
+    {% else %}
+    <div class="profile-avatar-lg">
+        {{ staff.user.first_name|make_list|first|upper }}{{ staff.user.last_name|make_list|first|upper }}
+    </div>
+    {% endif %}
+    <div class="profile-hero-info">
+        <h2>{{ staff.user.get_full_name }}</h2>
+        <p>{{ staff.designation }} · {{ staff.department }}</p>
+        <span class="role-badge"><i class="fas fa-chalkboard-teacher" style="margin-right:6px;"></i> {{
+            staff.user.get_role_display|default:"Teacher" }}</span>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="mini-stats-row animate-in animate-delay-1">
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#EDE9FE; color:#7C3AED;">
+            <i class="fas fa-chalkboard"></i>
+        </div>
+        <div class="ms-value">{{ classes.count }}</div>
+        <div class="ms-label">Classes</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#DBEAFE; color:#2563EB;">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="ms-value">{{ subjects.count }}</div>
+        <div class="ms-label">Subjects</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#D1FAE5; color:#059669;">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="ms-value">{{ payslips.count }}</div>
+        <div class="ms-label">Payslips</div>
+    </div>
+    <div class="mini-stat">
+        <div class="ms-icon" style="background:#FEF3C7; color:#D97706;">
+            <i class="fas fa-calendar-minus"></i>
+        </div>
+        <div class="ms-value">{{ recent_leaves.count }}</div>
+        <div class="ms-label">Leaves</div>
+    </div>
+</div>
+
+<!-- Details Grid -->
+<div class="profile-details-grid animate-in animate-delay-2">
+
+    <!-- Personal Information -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-id-card" style="color:var(--primary); font-size:16px;"></i>
+            <h3>Personal Information</h3>
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value">{{ staff.user.get_full_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Username</span>
+                <span class="detail-value">{{ staff.user.username }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ staff.user.email|default:"—" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Employee ID</span>
+                <span class="detail-value">{{ staff.employee_id }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Joining Date</span>
+                <span class="detail-value">{{ staff.joining_date|date:"d M Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Information -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-briefcase" style="color:var(--accent-purple); font-size:16px;"></i>
+            <h3>Professional Details</h3>
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-row">
+                <span class="detail-label">Designation</span>
+                <span class="detail-value">{{ staff.designation }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Department</span>
+                <span class="detail-value">{{ staff.department }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Created</span>
+                <span class="detail-value">{{ staff.user.date_joined|date:"d M Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classes Taught -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-chalkboard" style="color:var(--accent-green); font-size:16px;"></i>
+            <h3>Classes Taught</h3>
+        </div>
+        <div class="detail-card-body">
+            {% if classes %}
+            <div class="chip-list">
+                {% for cls in classes %}
+                <span class="chip" style="background:#EDE9FE; color:#7C3AED;">
+                    <i class="fas fa-door-open"></i> {{ cls }}
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
+                <i class="fas fa-info-circle" style="margin-right:6px;"></i> No classes assigned
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Subjects Taught -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <i class="fas fa-book" style="color:var(--accent-yellow); font-size:16px;"></i>
+            <h3>Subjects Taught</h3>
+        </div>
+        <div class="detail-card-body">
+            {% if subjects %}
+            <div class="chip-list">
+                {% for sub in subjects %}
+                <span class="chip" style="background:#DBEAFE; color:#2563EB;">
+                    <i class="fas fa-bookmark"></i> {{ sub.name }}
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
+                <i class="fas fa-info-circle" style="margin-right:6px;"></i> No subjects assigned
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Leaves -->
+    <div class="detail-card" style="grid-column: span 2;">
+        <div class="detail-card-header">
+            <i class="fas fa-calendar-minus" style="color:var(--accent-pink); font-size:16px;"></i>
+            <h3>Recent Leave Applications</h3>
+        </div>
+        <div class="detail-card-body">
+            {% if recent_leaves %}
+            {% for leave in recent_leaves %}
+            <div class="detail-row">
+                <span class="detail-label">{{ leave.start_date|date:"d M" }} — {{ leave.end_date|date:"d M Y" }}</span>
+                <span class="detail-value">
+                    <span
+                        class="badge {% if leave.status == 'APPROVED' %}badge-green{% elif leave.status == 'REJECTED' %}badge-pink{% else %}badge-yellow{% endif %}">
+                        {{ leave.get_status_display }}
+                    </span>
+                </span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
+                <i class="fas fa-check-circle" style="margin-right:6px;"></i> No leave applications
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

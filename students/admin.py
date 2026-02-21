@@ -3,6 +3,8 @@ from django.contrib import admin, messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import Student, Parent
 from core.models import User
 
@@ -11,6 +13,7 @@ class StudentForm(forms.ModelForm):
     last_name = forms.CharField(max_length=150, required=True, label='Last Name')
     email = forms.EmailField(required=True, label='Email Address')
     date_of_birth = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Joining Date')
+    photo = forms.ImageField(required=False, label='Photo', help_text='Upload a passport-size photo')
 
     class Meta:
         model = Student
@@ -24,13 +27,21 @@ class StudentForm(forms.ModelForm):
                 self.fields['first_name'].initial = self.instance.user.first_name
                 self.fields['last_name'].initial = self.instance.user.last_name
                 self.fields['email'].initial = self.instance.user.email
+            if self.instance.photo:
+                self.fields['photo'].initial = self.instance.photo
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     form = StudentForm
-    list_display = ('get_full_name', 'get_email', 'admission_number', 'current_class', 'date_of_birth')
+    list_display = ('photo_preview', 'get_full_name', 'get_email', 'admission_number', 'current_class', 'date_of_birth')
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'admission_number')
     list_filter = ('current_class',)
+
+    def photo_preview(self, obj):
+        if obj.photo:
+            return format_html('<img src="{}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" />', obj.photo.url)
+        return mark_safe('<span style="display:inline-block;width:36px;height:36px;border-radius:50%;background:#E5E7EB;text-align:center;line-height:36px;font-size:14px;color:#6B7280;">👤</span>')
+    photo_preview.short_description = 'Photo'
     
     # Custom display methods
     def get_full_name(self, obj):
@@ -67,6 +78,8 @@ class StudentAdmin(admin.ModelAdmin):
                 role=User.Role.STUDENT
             )
             obj.user = user
+            if form.cleaned_data.get('photo'):
+                obj.photo = form.cleaned_data['photo']
             obj.save()
             
             # Send Credentials via Email
@@ -96,6 +109,8 @@ class StudentAdmin(admin.ModelAdmin):
                 user.last_name = last_name
                 user.email = email
                 user.save()
+            if form.cleaned_data.get('photo'):
+                obj.photo = form.cleaned_data['photo']
             super().save_model(request, obj, form, change)
 
 @admin.register(Parent)

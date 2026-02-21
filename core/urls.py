@@ -15,4 +15,6 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('reset-password/', views.reset_password, name='reset_password'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile_router, name='profile_router'),
+    path('admin-profile/', views.admin_profile, name='admin_profile'),
 ]

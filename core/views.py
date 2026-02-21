@@ -149,3 +149,37 @@ def reset_password(request):
             messages.error(request, 'Passwords do not match.')
             
     return render(request, 'core/reset_password.html')
+
+
+@login_required
+def profile_router(request):
+    """Redirect the user to their role-specific profile page."""
+    if request.user.role == User.Role.ADMIN:
+        return redirect('admin_profile')
+    elif request.user.role == User.Role.STUDENT:
+        return redirect('students:profile')
+    elif request.user.role in [User.Role.TEACHER, User.Role.STAFF]:
+        if hasattr(request.user, 'driver_profile'):
+            return redirect('transport:driver_profile')
+        return redirect('staff:profile')
+    elif request.user.role == User.Role.TRANSPORT_MANAGER:
+        return redirect('transport:driver_profile')
+    return redirect('dashboard_router')
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_profile(request):
+    """Admin profile page with account info and system stats."""
+    total_students = Student.objects.count()
+    total_staff = Staff.objects.count()
+    total_users = User.objects.count()
+    total_vehicles = Vehicle.objects.count()
+
+    context = {
+        'total_students': total_students,
+        'total_staff': total_staff,
+        'total_users': total_users,
+        'total_vehicles': total_vehicles,
+    }
+    return render(request, 'core/admin_profile.html', context)

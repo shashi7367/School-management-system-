@@ -146,3 +146,43 @@ def student_timetable(request):
         'total_subjects': total_subjects,
     }
     return render(request, 'students/timetable.html', context)
+
+
+@login_required
+def student_profile(request):
+    if request.user.role != User.Role.STUDENT:
+        return render(request, 'core/access_denied.html')
+
+    try:
+        student = request.user.student_profile
+    except Student.DoesNotExist:
+        return render(request, 'students/no_profile.html')
+
+    # Attendance stats
+    total_attendance = Attendance.objects.filter(student=student).count()
+    present_count = Attendance.objects.filter(student=student, status=Attendance.Status.PRESENT).count()
+    attendance_percentage = (present_count / total_attendance * 100) if total_attendance > 0 else 0
+
+    # Fee stats
+    payments = Payment.objects.filter(student=student)
+    total_paid = sum(p.amount_paid for p in payments)
+    try:
+        fee_structure = FeeStructure.objects.get(class_level=student.current_class)
+        total_fee = fee_structure.total_fee()
+        fee_balance = total_fee - total_paid
+    except FeeStructure.DoesNotExist:
+        fee_balance = 0
+        total_fee = 0
+
+    # Parents
+    parents = student.parents.all()
+
+    context = {
+        'student': student,
+        'attendance_percentage': round(attendance_percentage, 1),
+        'total_paid': total_paid,
+        'total_fee': total_fee,
+        'fee_balance': fee_balance,
+        'parents': parents,
+    }
+    return render(request, 'students/profile.html', context)

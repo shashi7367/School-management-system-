@@ -11,6 +11,7 @@ class Student(models.Model):
     address = models.TextField()
     current_class = models.ForeignKey('academics.Class', on_delete=models.SET_NULL, null=True, blank=True)
     parents = models.ManyToManyField('students.Parent', related_name='all_children', blank=True)
+    photo = models.ImageField(upload_to='student_photos/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} ({self.admission_number})"

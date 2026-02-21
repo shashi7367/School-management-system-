@@ -7,6 +7,7 @@ class Staff(models.Model):
     employee_id = models.CharField(max_length=20, unique=True)
     department = models.CharField(max_length=100)
     joining_date = models.DateField()
+    photo = models.ImageField(upload_to='staff_photos/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} ({self.designation})"
