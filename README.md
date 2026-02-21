@@ -130,18 +130,7 @@ SMS/
 - **Admin Theme:** Django Jazzmin
 - **Icons:** Font Awesome 6
 
----
 
-## 📸 Screenshots
-
-### Student Dashboard
-> _Role-specific dashboard with attendance, fees, and quick stats_
-
-### Admin Panel
-> _Django admin with photo preview thumbnails and easy management_
-
-### Profile Pages
-> _Beautiful profile pages with photo display and detailed information_
 
 ---
 
