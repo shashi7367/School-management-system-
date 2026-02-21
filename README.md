@@ -84,9 +84,7 @@ A comprehensive, full-featured **School Management System** built with **Django 
    python manage.py runserver
    ```
 
-7. **Open in browser**
-   - Home: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-   - Admin Panel: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
+
 
 ---
 
