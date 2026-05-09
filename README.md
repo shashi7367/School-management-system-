@@ -83,7 +83,7 @@ A comprehensive, full-featured **School Management System** built with **Django 
    ```bash
    python manage.py runserver
    ```
-
+Open 👉 https://school-management-system-3qlo.vercel.app/
 
 
 ---
